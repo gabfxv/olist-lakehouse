@@ -1,0 +1,20 @@
+services:
+  api-server:
+    networks:
+      - olist-shared-network
+
+  scheduler:
+    networks:
+      - olist-shared-network
+
+  triggerer:
+    networks:
+      - olist-shared-network
+
+  postgres:
+    networks:
+      - olist-shared-network
+
+networks:
+  olist-shared-network:
+    external: true
