@@ -26,4 +26,4 @@ def ingest_file_to_bronze(bucket_name: str, object_name: str, minio_client: Mini
 
     response.release_conn()
 
-    print(f"Dados carregados para tabela {table_name}")
+    print(f"Data loaded to table {table_name}")

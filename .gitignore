@@ -14,3 +14,4 @@ airflow.db
 target/
 dbt_packages/
 logs/
+docker-volume/

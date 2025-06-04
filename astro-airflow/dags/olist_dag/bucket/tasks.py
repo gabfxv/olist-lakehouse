@@ -7,6 +7,6 @@ def create_bucket(bucket_name: str):
 
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
-        print(f"Bucket '{bucket_name}' criado com sucesso!")
+        print(f"Bucket '{bucket_name}' successfully created!")
     else:
-        print(f"Bucket '{bucket_name}' já existe.")
+        print(f"Bucket '{bucket_name}' already exists.")

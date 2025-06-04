@@ -1,0 +1,38 @@
+models:
+  - name: int_dedup_reviews
+    description: "Model used to remove duplications of review_ids. The order_id allows duplicates, therefore an order can have multiple reviews."
+    columns:
+      - name: review_id
+        description: "Unique identifier for a review"
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Unique identifier for the order"
+        tests:
+          - not_null
+          - relationships:
+              to: source('bronze', 'orders')
+              field: order_id
+
+      - name: review_score
+        description: "Score given by the customer to the order (1 to 5)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [ 1, 2, 3, 4, 5 ]
+
+      - name: review_comment_title
+        description: "Title of the customer's review comment."
+      - name: review_comment_message
+        description: "Detailed message of the customer's review comment."
+      - name: review_creation_date
+        description: "Date when the review was created."
+        tests:
+          - not_null
+
+      - name: review_answer_timestamp
+        description: "Timestamp when the review was answered by the seller."
+        tests:
+          - not_null

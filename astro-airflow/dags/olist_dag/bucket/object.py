@@ -7,7 +7,7 @@ def add_object(bucket_name: str, object_name: str, object_path: str):
     client = get_minio_client()
 
     if not os.path.isfile(object_path):
-        raise FileNotFoundError(f"O arquivo '{object_path}' não foi encontrado.")
+        raise FileNotFoundError(f"The file '{object_path}' was not found.")
 
     found = client.bucket_exists(bucket_name)
     if not found:
@@ -20,7 +20,7 @@ def add_object(bucket_name: str, object_name: str, object_path: str):
             object_path,
         )
         print(
-            f"Arquivo '{object_path}' enviado como '{object_name}' para o bucket '{bucket_name}'."
+            f"File '{object_path}' sent as '{object_name}' to bucket '{bucket_name}'."
         )
     except S3Error as e:
-        print("Erro ao fazer upload para o MinIO:", e)
+        print("Erro uploading to MinIO:", e)
