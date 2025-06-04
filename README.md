@@ -11,7 +11,7 @@ O objetivo é demonstrar como estruturar um pipeline de dados moderno, desde a i
 A arquitetura segue o conceito de **Lakehouse**, que combina as melhores características de data lakes e data warehouses.
 
 **Camadas:**
-- 🥉 **Bronze:** dados brutos, exatamente como foram extraídos do Kaggle.
+- 🥉 **Bronze:** dados brutos com únicas mudanças sendo redundâncias adicionadas por meio do Spark.
 - 🥈 **Silver:** dados limpos, tratados e integrados.
 - 🥇 **Gold:** modelo dimensional (tabelas `dim_*` e `fct_*`), pronto para consumo analítico.
 
@@ -22,7 +22,7 @@ A arquitetura segue o conceito de **Lakehouse**, que combina as melhores caracte
 ## 🔄 Pipeline de Dados
 
 1. **Ingestão:**  
-   Airflow (via [Astro](https://www.astronomer.io/product/)) orquestra a extração dos dados do [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), armazena no [MinIO](https://min.io/) (Data Lake) e depois carrega no [PostgreSQL](https://www.postgresql.org/) (camada bronze).
+   Airflow (via [Astro](https://www.astronomer.io/product/)) orquestra a extração dos dados do [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), armazena no [MinIO](https://min.io/) (Data Lake), realiza transformações iniciais complexas via [Apache Spark](https://spark.apache.org/) e depois carrega no [PostgreSQL](https://www.postgresql.org/) (camada bronze).
 
 2. **Transformação:**  
    O [dbt](https://www.getdbt.com/) aplica as transformações necessárias para gerar as camadas **silver** e **gold** dentro do PostgreSQL.
@@ -89,4 +89,9 @@ Os seguintes serviços estão acessíveis a partir destas URLs:
 A Gold layer segue o seguinte diagrama:
 
 ![Diagrama do modelo da gold layer](github-assets/gold_layer_schema.png)
+
+## 💡 Ideias futuras
+- Alterar banco de dados PostgreSQL para um banco de dados colunar.
+- Criar emuladores para haver dados novos diários sendo gerados.
+- Utilizar servidores MCP para o banco de dados e para o Power BI, para que possíveis analistas de dados possam realizar queries e visualizações por meio de linguagem natural.
 
