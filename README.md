@@ -91,8 +91,27 @@ A Gold layer segue o seguinte diagrama:
 
 ![Diagrama do modelo da gold layer](github-assets/gold_layer_schema.png)
 
+## Consultas analíticas em Linguagem Natural
+Você pode adicionar o [MCP Server do Postgres](https://hub.docker.com/r/mcp/postgres) ao Claude Desktop, por exemplo, para realizar consultas em linguagem natural.
+
+Para fazer isso, adicione a seguinte configuração ao `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "docker",
+      "args": [
+        "run", 
+        "-i", 
+        "--rm", 
+        "mcp/postgres", 
+        "postgresql://gabfxv:password@host.docker.internal:5543/olist"]
+    }
+  }
+}
+```
+
 ## 💡 Ideias futuras
 - Alterar banco de dados PostgreSQL para um banco de dados colunar.
 - Criar emuladores para haver dados novos diários sendo gerados.
-- Utilizar servidores MCP para o banco de dados e para o Power BI, para que possíveis analistas de dados possam realizar queries e visualizações por meio de linguagem natural.
 
