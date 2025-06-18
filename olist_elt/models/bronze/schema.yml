@@ -3,6 +3,7 @@ sources:
     database: olist
     schema: bronze
     description: Raw tables from Kaggle with no transformations applied; only redundancy added via PySpark.
+    tags: ["bronze"]
     tables:
       - name: geolocation
         identifier: olist_geolocation_dataset
@@ -29,7 +30,7 @@ sources:
             tests:
               - not_null
 
-      - name: orders
+      - name: order
         identifier: olist_orders_dataset
         description: Contains the details on orders performed on Olist, such as their customers, status and key dates.
         columns:
@@ -43,14 +44,15 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'customers')
+                  to: source('bronze', 'customer')
                   field: customer_id
           - name: order_status
             description: "Current status of the order (e.g., shipped, delivered, canceled)."
             tests:
               - not_null
-              - accepted_values:
-                  values: ['shipped','unavailable','invoiced','created','approved','processing','delivered','canceled']
+              - relationships:
+                  to: ref('order_status')
+                  field: status
           - name: order_purchase_timestamp
             description: "Timestamp when the order was placed."
             tests:
@@ -66,19 +68,24 @@ sources:
             tests:
               - not_null
 
-      - name: payments
+      - name: payment
         identifier: olist_order_payments_dataset
         description: Contains the details of installments payments for an order, such as the specific installment, value and payment method.
+        tests:
+          - dbt_utils.unique_combination_of_columns:
+              combination_of_columns:
+                - order_id
+                - payment_sequential
         columns:
           - name: order_id
             description: "Identifier for the related order."
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'orders')
+                  to: source('bronze', 'order')
                   field: order_id
           - name: payment_sequential
-            description: "Sequential number for the payment installment."
+            description: "Sequential number for the payment instance within a payment."
             tests:
               - not_null
           - name: payment_type
@@ -97,7 +104,7 @@ sources:
               - not_null
 
 
-      - name: products
+      - name: product
         identifier: olist_products_dataset
         description: Contains details about the products available on Olist.
         columns:
@@ -124,21 +131,21 @@ sources:
             description: "Width of the product in centimeters."
 
 
-      - name: reviews
+      - name: review
         identifier: olist_order_reviews_dataset
         description: Contains reviews on orders of Olist and associated metadata, such as timestamps.
         columns:
           - name: review_id
-            description: "IMPORTANTE: há duplicação de reviews com mesmo review_id. Deveria ser unique sim!"
+            description: "Identifier of the review. Should be unique."
             tests:
               - not_null
 
           - name: order_id
-            description: "Resolvido o problema do review_id de duplicação, provavelmente order_id se tornaria única"
+            description: "Order Id referenced by the review"
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'orders')
+                  to: source('bronze', 'order')
                   field: order_id
 
           - name: review_score
@@ -163,7 +170,7 @@ sources:
               - not_null
 
 
-      - name: sellers
+      - name: seller
         identifier: olist_sellers_dataset
         description: Contains details about the sellers of Olist.
         columns:
@@ -173,31 +180,33 @@ sources:
               - unique
               - not_null
           - name: seller_zip_code_prefix
-            description: "Zip code prefix of the seller's location."
+            description: "Zip code prefix of the seller's location. In bronze layer, there is not a full referential integrity with the geolocation table."
             tests:
               - not_null
           - name: seller_city
-            description: "City where the seller is located."
+            description: "City where the seller is located. In bronze layer, there is not a full referential integrity with the geolocation table."
             tests:
               - not_null
           - name: seller_state
             description: "State abbreviation where the seller is located."
             tests:
               - not_null
-              - relationships:
-                  to: source('bronze', 'geolocation')
-                  field: geolocation_state
 
-      - name: order_items
+      - name: order_item
         identifier: olist_order_items_dataset
         description: Contains details on the items that makes an order.
+        tests:
+          - dbt_utils.unique_combination_of_columns:
+              combination_of_columns:
+                - order_id
+                - order_item_id
         columns:
           - name: order_id
             description: "Identifier of the order containing this item."
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'orders')
+                  to: source('bronze', 'order')
                   field: order_id
           - name: order_item_id
             description: "Sequential identifier of the item within the order."
@@ -208,14 +217,14 @@ sources:
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'products')
+                  to: source('bronze', 'product')
                   field: product_id
           - name: seller_id
             description: "Identifier of the seller for this order item."
             tests:
               - not_null
               - relationships:
-                  to: source('bronze', 'sellers')
+                  to: source('bronze', 'seller')
                   field: seller_id
           - name: shipping_limit_date
             description: "Deadline date to ship the order item."
@@ -230,7 +239,7 @@ sources:
             tests:
               - not_null
 
-      - name: customers
+      - name: customer
         identifier: olist_customers_dataset
         description: Contains details about the customers of Olist.
         columns:
@@ -244,20 +253,17 @@ sources:
             tests:
               - not_null
           - name: customer_zip_code_prefix
-            description: "Zip code prefix of the customer's address."
+            description: "Zip code prefix of the customer's address.  In bronze layer, there is not a full referential integrity with the geolocation table."
             tests:
               - not_null
           - name: customer_city
-            description: "City where the customer resides."
+            description: "City where the customer resides.  In bronze layer, there is not a full referential integrity with the geolocation table."
             tests:
               - not_null
           - name: customer_state
             description: "State abbreviation where the customer resides."
             tests:
               - not_null
-              - relationships:
-                  to: source('bronze', 'geolocation')
-                  field: geolocation_state
 
       - name: category_translation
         identifier: product_category_name_translation
@@ -269,7 +275,7 @@ sources:
               - not_null
               - unique
               - relationships:
-                  to: source('bronze', 'products')
+                  to: source('bronze', 'product')
                   field: product_category_name
           - name: product_category_name_english
             description: "Product category name translated to English."

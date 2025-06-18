@@ -34,5 +34,14 @@ models:
     # Config indicated by + and applies to all files under models/example/
     silver:
       +materialized: view
+      +schema: silver
+      +tags: ["silver"]
     gold:
-      +materialized: incremental
+      +materialized: table
+      +schema: gold
+      +tags: ["gold"]
+
+seeds:
+  olist_elt:
+    +schema: dbt_seeds
+    +tags: ["seed"]

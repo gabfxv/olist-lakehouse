@@ -2,14 +2,23 @@ services:
   api-server:
     networks:
       - olist-shared-network
+    volumes:
+      - ../olist_elt:/opt/dbt/project
 
   scheduler:
     networks:
       - olist-shared-network
-
+    volumes:
+      - ../olist_elt:/opt/dbt/project
   triggerer:
     networks:
       - olist-shared-network
+
+  dag-processor:
+    networks:
+      - olist-shared-network
+    volumes:
+      - ../olist_elt:/opt/dbt/project
 
   postgres:
     networks:
@@ -17,4 +26,8 @@ services:
 
 networks:
   olist-shared-network:
+    external: true
+
+volumes:
+  dbt-exec:
     external: true

@@ -41,13 +41,32 @@ def list_csv_files(bucket_name: str):
     print(f"CSV Files found: {csv_files}")
     return csv_files
 
-@task(execution_timeout=timedelta(minutes=20))
-def load_to_bronze(bucket_name: str, object_name: str):
+@task
+def ingest_data(bucket_name: str, object_name: str):
+    """
+    Task única que faz a decisão e executa a ação apropriada
+    Elimina a complexidade do branching com dynamic mapping
+    """
     from olist_dag.bucket.minio_conf import get_minio_client
     from airflow.providers.postgres.hooks.postgres import PostgresHook
     from olist_dag.ingestion.postgres import ingest_file_to_bronze
+    from olist_dag.ingestion.postgres import ingest_staging_to_bronze
+    from sqlalchemy import inspect
 
-    client = get_minio_client()
+    table_name = object_name.replace('.csv', '')
+
     hook = PostgresHook(postgres_conn_id='postgres_conn')
     engine = hook.get_sqlalchemy_engine()
-    ingest_file_to_bronze(bucket_name, object_name, client, engine)
+
+    inspector = inspect(engine)
+    tables = inspector.get_table_names(schema='bronze')
+
+    if table_name in tables:
+        print(f"Table {table_name} already exists. Moving data from staging to bronze.")
+        ingest_staging_to_bronze(table_name, engine)
+        return f"staging_to_bronze_completed_{table_name}"
+    else:
+        print(f"Table {table_name} does not exist. Loading data from MinIO to bronze.")
+        client = get_minio_client()
+        ingest_file_to_bronze(bucket_name, object_name, client, engine)
+        return f"file_to_bronze_completed_{table_name}"

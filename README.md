@@ -63,6 +63,7 @@ mkdir -p ~/.dbt
 
 Para subir o PostgreSQL, MinIO e o DBT Docs, execute:
 ```bash
+docker volume create dbt-project --opt type=none --opt device=./olist_elt --opt o=bind
 docker-compose up -d
 ```
 

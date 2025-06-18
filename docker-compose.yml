@@ -39,7 +39,7 @@ services:
       - "8081:8081"
     volumes:
       - ./olist_elt:/usr/app
-      - C:/Users/User/.dbt:/root/.dbt
+      - dbt-exec:/root/.dbt
     restart: unless-stopped
     depends_on:
       - olist-postgres
@@ -47,6 +47,10 @@ services:
 volumes:
   postgres-data:
   minio-data:
+  dbt-exec:
+    external: true
+  dbt-project:
+    external: true
 
 networks:
   olist-shared-network:

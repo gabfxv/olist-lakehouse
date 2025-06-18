@@ -1,0 +1,558 @@
+models:
+  - name: dim_comment
+    description: "Dimension table with the comment of a review."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - title
+            - message
+    columns:
+      - name: dim_comment_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Title of a comment."
+      - name: message
+        description: "The message within the comment."
+
+  - name: dim_customer
+    description: "Dimension table with information about Olist customers."
+    columns:
+      - name: dim_customer_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - unique
+          - not_null
+      - name: dim_location_id
+        description: "Foreign key of the location of the customer. Reference to the dim_location."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: dim_location_id
+      - name: customer_id
+        description: "Original unique identifier for a customer for a specific order."
+        tests:
+          - not_null
+          - unique
+      - name: customer_unique_id
+        description: "Original unique identifier for the customer from Olist."
+        tests:
+          - not_null
+
+  - name: dim_date
+    description: "Dimension table with the dates being referenced in the fact and dimension tables."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - day
+            - month
+            - year
+    columns:
+      - name: dim_date_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: "Date with day, month and year."
+        tests:
+          - unique
+          - not_null
+      - name: day
+        description: Day.
+      - name: day_week
+        description: "Number of the day of the week (Sunday = 0, ...)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('day_week')
+              field: day_week
+      - name: day_week_written_pt
+        description: "Number of the day of the week written in portuguese."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('day_week')
+              field: day_week_written_pt
+      - name: month
+        description: "Month."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+                min_value: 1
+                max_value: 12
+                inclusive: true
+      - name: month_written_pt
+        description: "Month written in portuguese."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('month')
+              field: month_written_pt
+      - name: year
+        description: "Year."
+        tests:
+          - not_null
+      - name: trimester
+        description: "Trimester."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 4
+              inclusive: true
+      - name: semester
+        description: "Semester."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 2
+              inclusive: true
+      - name: decade
+        description: "Decade."
+        tests:
+          - not_null
+
+  - name: dim_location
+    description: "Dimension table with the locations of customers and sellers."
+    columns:
+      - name: dim_location_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: zip_code_prefix
+        description: "Zip code prefix for the geographical location."
+        tests:
+          - not_null
+          - unique
+      - name: lat
+        description: "Latitude coordinate of the location."
+      - name: long
+        description: "Longitude coordinate of the location."
+      - name: city
+        description: "City name of the geographical location."
+        tests:
+          - not_null
+      - name: state
+        description: "State abbreviation of the geographical location."
+        tests:
+          - not_null
+      - name: country
+        description: "Country of the geographical location."
+        tests:
+          - not_null
+      - name: continent
+        description: "Continent of the geographical location."
+        tests:
+          - not_null
+
+  - name: dim_order
+    description: "Dimension table with the orders in Olist."
+    columns:
+      - name: dim_order_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - unique
+          - not_null
+      - name: dim_customer_id
+        description: "Foreign key of the customer who placed the order. Reference to the dim_customer."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: dim_customer_id
+      - name: dim_order_status_id
+        description: "Foreign key of the status of the order. Reference to the dim_order_status."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_order_status')
+              field: dim_order_status_id
+      - name: purchase_ts_id
+        description: "Foreign key of the purchase timestamp. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: approved_ts_id
+        description: "Foreign key of the approved timestamp. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: delivered_carrier_ts_id
+        description: "Foreign key of the carrier delivery timestamp. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: delivered_customer_ts_id
+        description: "Foreign key of the customer delivery timestamp. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: purchase_dt_id
+        description: "Foreign key of the purchase date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: approved_dt_id
+        description: "Foreign key of the approved date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: delivered_carrier_dt_id
+        description: "Foreign key of the carrier delivery date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: delivered_customer_dt_id
+        description: "Foreign key of the customer delivery date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: estimated_delivery_dt_id
+        description: "Foreign key of the estimated delivery date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: order_id
+        description: "Original unique identifier of the order from Olist."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_order_item
+    description: "Dimension table with the items of orders from Olist."
+    columns:
+      - name: dim_order_item_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: order_item
+        description: "The number of the item inside an order."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_order_status
+    description: "Dimension table with the status of orders from Olist."
+    columns:
+      - name: dim_order_status_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: status
+        description: "The status of the order."
+        tests:
+          - not_null
+          - unique
+      - name: description
+        description: "Description of the order status."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_payment_detail
+    description: "Dimension table with the details of an order payment from Olist."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - nro_instance
+            - payment_type
+    columns:
+      - name: dim_payment_detail_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: nro_instance
+        description: "Sequential number for the payment instance within a payment."
+        tests:
+          - not_null
+      - name: payment_type
+        description: "The payment type of the payment instance."
+        tests:
+          - not_null
+
+  - name: dim_product
+    description: "Dimension table with the details of an order payment from Olist."
+    columns:
+      - name: dim_product_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: dim_product_category_id
+        description: "Foreign key of the product category. Reference to the dim_product_category."
+        tests:
+          - not_null
+      - name: name_length
+        description: "Length of the product name."
+      - name: description_length
+        description: "Length of the product description."
+      - name: photos_qty
+        description: "Quantity of photos of the product."
+      - name: weight_g
+        description: "Product's weight in grams."
+      - name: length_cm
+        description: "Product's length in centimeters."
+      - name: height_cm
+        description: "Product's height in centimeters."
+      - name: width_cm
+        description: "Product's width in centimeters."
+      - name: product_id
+        description: "Original unique identifier of the product from Olist."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_product_category
+    description: "Dimension table with the category of products in Olist."
+    columns:
+      - name: dim_product_category_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: name_pt
+        description: "Name of the category in portuguese."
+        tests:
+          - not_null
+          - unique
+      - name: name_en
+        description: "Name of the category in english."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_seller
+    description: "Dimension table with information about Olist sellers."
+    columns:
+      - name: dim_seller_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: dim_location_id
+        description: "Foreign key of the location of the seller. Reference to the dim_location."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: dim_location_id
+      - name: seller_id
+        description: "Original unique identifier for the seller from Olist."
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_time
+    description: "Dimension table with the timestamps mentioned in the Olist database."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - hour
+            - minute
+            - second
+    columns:
+      - name: dim_time_id
+        description: "Artificial primary key of the dimension table."
+        tests:
+          - not_null
+          - unique
+      - name: full_time
+        description: "Timestamp with the full time (hour, minute and second)."
+        tests:
+          - unique
+      - name: hour
+        description: "Hour."
+      - name: minute
+        description: "Minute."
+      - name: second
+        description: "Second."
+      - name: time_bucket
+        description: "Period of the day in portuguese."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Sem horário', 'Manhã', 'Tarde', 'Noite', 'Madrugada']
+  - name: fct_order_review
+    description: "Fact table considering the reviews of orders in Olist."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - dim_order_id
+            - dim_comment_id
+            - dim_creation_dt_id
+            - dim_answer_ts_id
+            - dim_answer_dt_id
+    columns:
+      - name: dim_order_id
+        description: "Foreign key of the order. Reference to the dim_order."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_order')
+              field: dim_order_id
+      - name: dim_comment_id
+        description: "Foreign key of the comment details. Reference to the dim_comment."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_comment')
+              field: dim_comment_id
+      - name: dim_creation_dt_id
+        description: "Foreign key of the review creation date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: dim_answer_dt_id
+        description: "Foreign key of the seller answer date. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: dim_answer_ts_id
+        description: "Foreign key of the review creation time. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: review_score
+        description: "Score assigned to the order."
+        tests:
+          - not_null
+      - name: review_id
+        description: "Original unique identifier for a review."
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_order_item
+    description: "Fact table considering the items of an order."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - dim_order_id
+            - dim_order_item_id
+            - dim_product_id
+            - dim_seller_id
+            - dim_shipping_limit_ts_id
+            - dim_shipping_limit_dt_id
+    columns:
+      - name: dim_order_id
+        description: "Foreign key of the order. Reference to the dim_order."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_order')
+              field: dim_order_id
+      - name: dim_order_item_id
+        description: "Foreign key of the order item. Reference to the dim_order_item."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_order_item')
+              field: dim_order_item_id
+      - name: dim_product_id
+        description: "Foreign key of the product. Reference to the dim_product."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: dim_product_id
+      - name: dim_seller_id
+        description: "Foreign key of the seller. Reference to the dim_seller."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_seller')
+              field: dim_seller_id
+      - name: dim_shipping_limit_ts_id
+        description: "Foreign key of the shipping time limit. Reference to the dim_time."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_time')
+              field: dim_time_id
+      - name: dim_shipping_limit_dt_id
+        description: "Foreign key of the shipping date limit. Reference to the dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: dim_date_id
+      - name: price
+        description: "Price of the order item in Reais."
+        tests:
+          - not_null
+      - name: freight_value
+        description: "Price of the freight for the item in Reais."
+        tests:
+          - not_null
+
+  - name: fct_payment_instance
+    description: "Fact table considering the instances of an order payment."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - dim_order_id
+            - dim_customer_id
+            - dim_payment_detail_id
+    columns:
+      - name: dim_order_id
+        description: "Foreign key of the order. Reference to the dim_order."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_order')
+              field: dim_order_id
+      - name: dim_customer_id
+        description: "Foreign key of the customer. Reference to the dim_customer."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: dim_customer_id
+      - name: dim_payment_detail_id
+        description: "Foreign key of the payment instance details. Reference to the dim_payment_detail."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_payment_detail')
+              field: dim_payment_detail_id
+      - name: nro_installments
+        description: "Number of installments."
+        tests:
+          - not_null
+      - name: payment_value
+        description: "Value of the payment instance in Reais."
+        tests:
+          - not_null

@@ -1,0 +1,45 @@
+seeds:
+  - name: order_status
+    description: "This is a mapping table for order statuses and their descriptions."
+    columns:
+      - name: status
+        description: "Status of the order."
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: source('bronze', 'order')
+              field: order_status
+      - name: description
+        description: "Human-readable description of the order status."
+        tests:
+          - not_null
+          - unique
+
+  - name: month
+    description: "This is a mapping table between the month number and its name in portuguese."
+    columns:
+      - name: month
+        description: "Month number."
+        tests:
+          - not_null
+          - unique
+      - name: month_written_pt
+        description: "Month name in portuguese."
+        tests:
+          - not_null
+          - unique
+
+  - name: day_week
+    description: "This is a mapping table between the number of the day of the week and its name in portuguese."
+    columns:
+      - name: day_week
+        description: "Number corresponding to the day of the week."
+        tests:
+          - not_null
+          - unique
+      - name: day_week_written_pt
+        description: "Day of the week in portuguese."
+        tests:
+          - not_null
+          - unique

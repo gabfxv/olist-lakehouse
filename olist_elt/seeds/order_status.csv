@@ -1,0 +1,9 @@
+status,description
+created,O pedido foi criado no sistema.
+approved,O pagamento foi aprovado e o pedido foi confirmado.
+processing,O pedido está sendo preparado para envio.
+invoiced,A nota fiscal foi emitida para o pedido.
+shipped,O pedido foi enviado pelo vendedor e está a caminho do cliente.
+delivered,O pedido foi entregue com sucesso ao cliente.
+unavailable,O pedido não pôde ser concluído.
+canceled,O pedido foi cancelado.
